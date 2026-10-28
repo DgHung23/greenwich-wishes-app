@@ -222,7 +222,7 @@ const SECRET = process.env.COOKIE_SECRET || (fs.existsSync(SECRET_FILE) ? fs.rea
     : (() => { const s = crypto.randomBytes(32).toString('hex'); fs.writeFileSync(SECRET_FILE, s, { mode: 0o600 }); return s; })());
 const sign = v => crypto.createHmac('sha256', SECRET).update(v).digest('hex').slice(0, 32);
 const safeEq = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
-const isHttps = req => (req.headers['x-forwarded-proto'] || '').includes('https') || PUBLIC_URL.startsWith('https');
+const isHttps = req => (req.headers['x-forwarded-proto'] || '').includes('https') || (req.headers['cloudfront-forwarded-proto'] || '').includes('https') || PUBLIC_URL.startsWith('https');
 
 function parseCookies(req) {
     const out = {};
@@ -347,9 +347,26 @@ async function api(req, res, url) {
 
     // state-changing requests must come from this site (blocks cross-site form posts)
     if (req.method !== 'GET' && req.headers.origin) {
-        let host = ''; try { host = new URL(req.headers.origin).host; } catch (e) { }
-        const ok = [req.headers['x-forwarded-host'], req.headers.host, PUBLIC_URL && new URL(PUBLIC_URL).host].filter(Boolean).includes(host);
-        if (!ok) return json(res, 403, { error: 'bad_origin' });
+        let originHost = '';
+        try { originHost = new URL(req.headers.origin).host; } catch (e) { }
+
+        let publicHost = '';
+        try { if (PUBLIC_URL) publicHost = new URL(PUBLIC_URL).host; } catch (e) { }
+
+        const allowedHosts = [
+            req.headers['x-forwarded-host'],
+            req.headers.host,
+            publicHost
+        ].filter(Boolean);
+
+        const isCloudFront = originHost.endsWith('.cloudfront.net') ||
+            (req.headers.via && req.headers.via.toLowerCase().includes('cloudfront'));
+
+        const ok = allowedHosts.includes(originHost) || isCloudFront;
+        if (!ok) {
+            console.warn(`[!] Blocked origin: "${originHost}". Allowed hosts:`, allowedHosts);
+            return json(res, 403, { error: 'bad_origin' });
+        }
     }
 
     if (url.pathname === '/api/me' && req.method === 'GET') {

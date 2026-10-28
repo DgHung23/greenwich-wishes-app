@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return showMsg('create.tooBig');
         }
         if (err.status === 409) return GW.load().then(function () { showPosted(err.body && err.body.wishId); });
-        if (err.status === 403) return showMsg('admin.expired');
+        if (err.status === 403 && editing) return showMsg('admin.expired');
         showMsg(err.status === 429 ? 'create.errRate' : (err.status === 413 || err.message === 'storage_full') ? 'create.tooBig' : 'create.errGeneric');
     }
 

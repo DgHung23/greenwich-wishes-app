@@ -29,6 +29,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/${POSTGRES_DB:-greenwich_wishes}
       DATA_DIR: /data
       TRUST_PROXY: "1"
+      PUBLIC_URL: ${PUBLIC_URL:-https://d1qji552j01z75.cloudfront.net}
     depends_on:
       postgres:
         condition: service_healthy
