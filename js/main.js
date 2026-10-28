@@ -392,7 +392,11 @@ GW.load().then(function (wishes) {
             mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
             ray.setFromCamera(mouse, camera);
             var hit = ray.intersectObjects(lights)[0];
-            if (hit) showTreeWish(hit.object.userData.wish);
+            if (hit) {
+                showTreeWish(hit.object.userData.wish);
+            } else if (display.classList.contains('show')) {
+                display.classList.remove('show');
+            }
         });
         var hoverCheck = function (e) {
             var r = renderer.domElement.getBoundingClientRect();
@@ -406,13 +410,24 @@ GW.load().then(function (wishes) {
         function showTreeWish(w) {
             display.classList.remove('hint');
             display.innerHTML = '<div class="wish-popup-content">' +
-                '<button class="close-popup-btn" aria-label="close"><i class="fas fa-xmark"></i></button>' +
-                GW.cardBox(w) + '</div>';
+                GW.cardBox(w) +
+                '<button class="close-popup-btn" aria-label="' + GW.esc(i18n.t('common.close')) + '" title="' + GW.esc(i18n.t('common.close')) + '"><i class="fas fa-xmark"></i></button>' +
+                '</div>';
             display.classList.add('show');
-            display.querySelector('.close-popup-btn').addEventListener('click', function () {
-                display.classList.remove('show');
-            });
+            var btn = display.querySelector('.close-popup-btn');
+            if (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    display.classList.remove('show');
+                });
+            }
         }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && display && display.classList.contains('show')) {
+                display.classList.remove('show');
+            }
+        });
 
         function resize() {
             camera.aspect = box.clientWidth / box.clientHeight;

@@ -398,10 +398,40 @@ ul.list-congratulations li { margin-bottom: 20px; }
 .wish-popup-content { position: relative; width: min(340px, 78vw); aspect-ratio: 1; border-radius: 22px; overflow: hidden; box-shadow: 0 15px 40px rgba(0, 0, 0, .6); }
 .canvas-container:fullscreen .wish-popup-content { width: min(520px, 80vh); }
 .close-popup-btn {
-    position: absolute; top: 10px; left: 10px; z-index: 6; width: 30px; height: 30px; border-radius: 50%;
-    border: none; background: rgba(255, 255, 255, .9); color: var(--gw-navy);
+    position: absolute; top: 12px; left: 12px; z-index: 100; width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid #fff; background: rgba(255, 255, 255, .95); color: var(--gw-navy);
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+    transition: background .2s ease, transform .2s ease, color .2s ease;
+    pointer-events: auto;
 }
-.close-popup-btn:hover { background: var(--gw-orange); color: #fff; }
+.close-popup-btn:hover { background: var(--gw-orange); color: #fff; transform: scale(1.1); }
+
+/* Disable card hover jumps & transformations when displayed inside popups / modals */
+.wish-popup-content .cr-detail-box,
+#tree-wish-display .cr-detail-box,
+.detail-card .cr-detail-box {
+    cursor: default;
+    transform: none !important;
+    transition: none !important;
+}
+.wish-popup-content .cr-detail-box:hover,
+#tree-wish-display .cr-detail-box:hover,
+.detail-card .cr-detail-box:hover {
+    transform: none !important;
+    box-shadow: 0 6px 18px rgba(var(--gw-navy-rgb), .12) !important;
+    z-index: 1 !important;
+}
+.wish-popup-content .cr-detail-box::before,
+#tree-wish-display .cr-detail-box::before,
+.detail-card .cr-detail-box::before {
+    display: none !important;
+}
+.wish-popup-content .cr-detail-box:hover .cr-date,
+#tree-wish-display .cr-detail-box:hover .cr-date,
+.detail-card .cr-detail-box:hover .cr-date {
+    transform: none !important;
+}
 
 /* ---------- Modals ---------- */
 .cluster-modal-content { border-radius: 18px; border: none; overflow: hidden; }
