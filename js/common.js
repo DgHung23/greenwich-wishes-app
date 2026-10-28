@@ -148,7 +148,7 @@
          * looks exactly like the card on the site. photoSrc: a <canvas> (fresh crop) or an image URL (existing photo).
          */
         renderCardImage: function (w, photoSrc) {
-            var S = 800;
+            var S = 640;
             function loadImg(src) {
                 return new Promise(function (ok) {
                     var i = new Image();
@@ -222,8 +222,8 @@
                 g.shadowBlur = 0;
                 g.fillStyle = '#f37021'; g.font = '900 ' + Math.round(150 * scale) + 'px Georgia, serif'; g.fillText('\u201C', Math.round(70 * scale), top + 20);
 
-                var q = .78, data = c.toDataURL('image/jpeg', q);
-                while (data.length > 350 * 1024 && q > .45) { q -= .1; data = c.toDataURL('image/jpeg', q); }
+                var q = .70, data = c.toDataURL('image/jpeg', q);
+                while (data.length > 160 * 1024 && q > .45) { q -= .08; data = c.toDataURL('image/jpeg', q); }
                 return data;
             });
         },

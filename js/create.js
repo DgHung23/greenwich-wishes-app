@@ -9,7 +9,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var $ = function (id) { return document.getElementById(id); };
     var cropper = null, previewTimer = null, editing = null;       // editing = the wish being edited (admin)
-    var MAX_FILE = 15 * 1024 * 1024;
+    var MAX_FILE = 50 * 1024 * 1024; // allow up to 50MB, client will downscale and pre-compress
     var PLACEHOLDER = 'p01';          // shown in the preview until the author picks a photo
     var editId = new URLSearchParams(location.search).get('edit');
 
@@ -59,25 +59,99 @@ document.addEventListener('DOMContentLoaded', function () {
         $('crop-area').classList.add('d-none'); $('btn-pick').classList.remove('d-none'); $('f-file').value = '';
     }
 
+    function preCompressFile(file, callback, onError) {
+        var maxDim = 1000;
+        function resizeAndExport(source, origW, origH) {
+            try {
+                var ratio = Math.min(1, maxDim / Math.max(origW, origH));
+                var targetW = Math.max(1, Math.round(origW * ratio));
+                var targetH = Math.max(1, Math.round(origH * ratio));
+
+                var canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                var ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'medium';
+                ctx.drawImage(source, 0, 0, targetW, targetH);
+                var compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+                callback(compressedDataUrl);
+            } catch (e) {
+                fallback();
+            }
+        }
+
+        function fallback() {
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () {
+                try {
+                    var w = img.naturalWidth || img.width;
+                    var h = img.naturalHeight || img.height;
+                    var ratio = Math.min(1, maxDim / Math.max(w, h));
+                    var targetW = Math.max(1, Math.round(w * ratio));
+                    var targetH = Math.max(1, Math.round(h * ratio));
+                    var canvas = document.createElement('canvas');
+                    canvas.width = targetW;
+                    canvas.height = targetH;
+                    var ctx = canvas.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'medium';
+                    ctx.drawImage(img, 0, 0, targetW, targetH);
+                    URL.revokeObjectURL(url);
+                    callback(canvas.toDataURL('image/jpeg', 0.72));
+                } catch (err) {
+                    callback(url);
+                }
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(url);
+                if (onError) onError();
+            };
+            img.src = url;
+        }
+
+        if (window.createImageBitmap) {
+            createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bmp) {
+                resizeAndExport(bmp, bmp.width, bmp.height);
+                if (bmp.close) bmp.close();
+            }).catch(function () {
+                fallback();
+            });
+        } else {
+            fallback();
+        }
+    }
+
     function openFile(file) {
         clearMsg();
         if (!file) return;
-        if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showMsg('create.badType');
+        if (!/^image\/(jpeg|png|webp|gif|bmp)$/i.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name)) {
+            return showMsg('create.badType');
+        }
         if (file.size > MAX_FILE) return showMsg('create.tooBig');
-        var url = URL.createObjectURL(file);
-        if (cropper) { cropper.destroy(); cropper = null; }
-        var img = $('crop-img');
-        img.onload = function () {
-            $('crop-area').classList.remove('d-none');
-            $('btn-pick').classList.add('d-none');
-            cropper = new Cropper(img, {
-                aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 1, background: false, guides: false,
-                center: false, highlight: false, cropBoxMovable: false, cropBoxResizable: false,
-                toggleDragModeOnDblclick: false, checkOrientation: true, responsive: true,
-                ready: renderPreview, crop: schedulePreview
-            });
-        };
-        img.src = url;
+
+        GW.spinner(true, i18n.t('create.processing'));
+
+        preCompressFile(file, function (dataUrl) {
+            GW.spinner(false);
+            if (cropper) { cropper.destroy(); cropper = null; }
+            var img = $('crop-img');
+            img.onload = function () {
+                $('crop-area').classList.remove('d-none');
+                $('btn-pick').classList.add('d-none');
+                cropper = new Cropper(img, {
+                    aspectRatio: 1, viewMode: 1, dragMode: 'move', autoCropArea: 1, background: false, guides: false,
+                    center: false, highlight: false, cropBoxMovable: false, cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false, checkOrientation: true, responsive: true,
+                    ready: renderPreview, crop: schedulePreview
+                });
+            };
+            img.src = dataUrl;
+        }, function () {
+            GW.spinner(false);
+            showMsg('create.badType');
+        });
     }
     $('btn-pick').addEventListener('click', function () { $('f-file').click(); });
     $('crop-change').addEventListener('click', function () { $('f-file').value = ''; $('f-file').click(); });
@@ -111,13 +185,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- submit ---------- */
     function photoCanvas() {
-        // resize to 640x640: sharp on all screens, but 3x faster and avoids mobile OOM
-        return cropper.getCroppedCanvas({ width: 640, height: 640, fillColor: '#ffffff', imageSmoothingQuality: 'medium' });
+        // resize to 480x480: sharp on cards, lightweight and saves server usage
+        return cropper.getCroppedCanvas({ width: 480, height: 480, fillColor: '#ffffff', imageSmoothingQuality: 'medium' });
     }
     function canvasJpeg(canvas) {
-        // compress with 0.78 quality: cuts payload from 1.5MB to ~80-120KB
-        var q = .78, data = canvas.toDataURL('image/jpeg', q);
-        while (data.length > 400 * 1024 && q > .45) { q -= .1; data = canvas.toDataURL('image/jpeg', q); }
+        // compress with 0.70 quality: cuts payload to ~30-50KB to save usage
+        var q = .70, data = canvas.toDataURL('image/jpeg', q);
+        while (data.length > 120 * 1024 && q > .4) { q -= .08; data = canvas.toDataURL('image/jpeg', q); }
         return data;
     }
     function fail(err) {
