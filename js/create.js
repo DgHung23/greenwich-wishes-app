@@ -196,12 +196,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function fail(err) {
         GW.spinner(false);
+        console.error('Wish submit error:', err);
         if (err.name === 'AbortError' || (err.message && err.message.indexOf('timeout') !== -1)) {
             return showMsg('create.tooBig');
         }
         if (err.status === 409) return GW.load().then(function () { showPosted(err.body && err.body.wishId); });
         if (err.status === 403 && editing) return showMsg('admin.expired');
-        showMsg(err.status === 429 ? 'create.errRate' : (err.status === 413 || err.message === 'storage_full') ? 'create.tooBig' : 'create.errGeneric');
+        if (err.status === 429) return showMsg('create.errRate');
+        if (err.status === 413 || err.message === 'storage_full') return showMsg('create.tooBig');
+
+        var detail = (err.body && err.body.error) || err.message || (err.status ? 'HTTP ' + err.status : '');
+        var el = $('f-error');
+        el.className = 'alert py-2 alert-warning';
+        el.textContent = i18n.t('create.errGeneric') + (detail ? ' (' + detail + ')' : '');
+        el.classList.remove('d-none');
     }
 
     $('wish-form').addEventListener('submit', function (e) {

@@ -152,6 +152,7 @@
             function loadImg(src) {
                 return new Promise(function (ok) {
                     var i = new Image();
+                    i.crossOrigin = 'anonymous';
                     var t = setTimeout(function () { ok(i); }, 2500);
                     i.onload = function () { clearTimeout(t); ok(i); };
                     i.onerror = function () { clearTimeout(t); ok(i); };
@@ -164,67 +165,75 @@
 
             var photo = typeof photoSrc === 'string' ? loadImg(photoSrc) : Promise.resolve(photoSrc);
             return Promise.all([photo, loadImg('images/logo.png'), fonts]).then(function (r) {
-                var img = r[0] || {}, logo = r[1] || {};
-                var c = document.createElement('canvas'); c.width = c.height = S;
-                var g = c.getContext('2d'); g.imageSmoothingQuality = 'medium';
-                var FONT = '"Be Vietnam Pro", Arial, sans-serif';
+                try {
+                    var img = r[0] || {}, logo = r[1] || {};
+                    var c = document.createElement('canvas'); c.width = c.height = S;
+                    var g = c.getContext('2d'); g.imageSmoothingQuality = 'medium';
+                    var FONT = '"Be Vietnam Pro", Arial, sans-serif';
 
-                // photo, cover-fitted
-                var iw = img.naturalWidth || img.width || S, ih = img.naturalHeight || img.height || S, k = Math.max(S / iw, S / ih);
-                if (img.width || img.naturalWidth) {
-                    g.drawImage(img, (S - iw * k) / 2, (S - ih * k) / 2, iw * k, ih * k);
-                } else {
-                    g.fillStyle = '#061b3d'; g.fillRect(0, 0, S, S);
+                    // photo, cover-fitted
+                    var iw = img.naturalWidth || img.width || S, ih = img.naturalHeight || img.height || S, k = Math.max(S / iw, S / ih);
+                    if (img.width || img.naturalWidth) {
+                        g.drawImage(img, (S - iw * k) / 2, (S - ih * k) / 2, iw * k, ih * k);
+                    } else {
+                        g.fillStyle = '#061b3d'; g.fillRect(0, 0, S, S);
+                    }
+
+                    // navy panel rising from the bottom (same stops as the CSS card)
+                    var gr = g.createLinearGradient(0, 0, 0, S);
+                    gr.addColorStop(0, 'rgba(6,27,61,0)'); gr.addColorStop(.30, 'rgba(6,27,61,0)');
+                    gr.addColorStop(.58, 'rgba(6,27,61,.88)'); gr.addColorStop(1, 'rgba(6,27,61,.97)');
+                    g.fillStyle = gr; g.fillRect(0, 0, S, S);
+
+                    function rrect(x, y, w, h, rad) {
+                        g.beginPath(); g.moveTo(x + rad, y); g.arcTo(x + w, y, x + w, y + h, rad); g.arcTo(x + w, y + h, x, y + h, rad);
+                        g.arcTo(x, y + h, x, y, rad); g.arcTo(x, y, x + w, y, rad); g.closePath();
+                    }
+                    // logo badge
+                    var lh = 72, lw = logo.width && logo.height ? Math.round(lh * logo.width / logo.height) : 200;
+                    g.fillStyle = 'rgba(255,255,255,.94)'; rrect(48, 40, lw + 42, lh + 22, 24); g.fill();
+                    if (logo.width) g.drawImage(logo, 69, 51, lw, lh);
+                    // date tag
+                    g.fillStyle = '#f37021'; g.fillRect(S - 160, 0, 160, 40);
+                    g.fillStyle = '#fff'; g.font = '700 21px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+                    g.fillText(formatDate(w.createdAt || new Date().toISOString()), S - 80, 22);
+
+                    // author block
+                    var scale = S / 1000;
+                    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+                    g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 8;
+                    var meta1 = i18n.t('role.' + w.role) + ' \u00b7 ' + i18n.t('campus.' + w.campus), meta2 = countryName(w.country);
+                    var footTop = Math.round(759 * scale), tx = Math.round(270 * scale);
+                    g.fillStyle = '#fff'; g.font = '800 ' + Math.round(54 * scale) + 'px ' + FONT; g.fillText(fit(g, w.name, 520), tx, footTop + Math.round(42 * scale));
+                    g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '500 ' + Math.round(40 * scale) + 'px ' + FONT;
+                    g.fillText(fit(g, meta1, 520), tx, footTop + Math.round(42 * scale + 43 * scale));
+                    g.fillText(fit(g, '\u25CF ' + meta2, 520), tx, footTop + Math.round(42 * scale + 43 * scale + 42 * scale));
+                    g.shadowBlur = 0;
+                    var avR = Math.round(60 * scale);
+                    g.fillStyle = '#f37021'; g.beginPath(); g.arc(Math.round(155 * scale), footTop + Math.round(69 * scale), avR, 0, Math.PI * 2); g.fill();
+                    g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.7)'; g.stroke();
+                    g.fillStyle = '#fff'; g.font = '800 ' + Math.round(48 * scale) + 'px ' + FONT; g.textAlign = 'center';
+                    g.fillText(initials(w.name), Math.round(155 * scale), footTop + Math.round(69 * scale + 17 * scale)); g.textAlign = 'left';
+                    g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(Math.round(80 * scale), Math.round(729 * scale), Math.round(840 * scale), 2);
+
+                    // message, built upwards from the divider
+                    g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 10;
+                    g.font = '600 ' + Math.round(56 * scale) + 'px ' + FONT; g.fillStyle = '#fff';
+                    var lines = wrapText(g, w.message, Math.round(840 * scale), 4), lh2 = Math.round(77 * scale), top = Math.round(689 * scale) - lines.length * lh2;
+                    lines.forEach(function (ln, i) { g.fillText(ln, Math.round(80 * scale), top + (i + 1) * lh2 - 16); });
+                    g.shadowBlur = 0;
+                    g.fillStyle = '#f37021'; g.font = '900 ' + Math.round(150 * scale) + 'px Georgia, serif'; g.fillText('\u201C', Math.round(70 * scale), top + 20);
+
+                    var q = .70, data = c.toDataURL('image/jpeg', q);
+                    while (data.length > 160 * 1024 && q > .45) { q -= .08; data = c.toDataURL('image/jpeg', q); }
+                    return data;
+                } catch (e) {
+                    console.warn('[!] Failed to generate card image canvas:', e);
+                    return null;
                 }
-
-                // navy panel rising from the bottom (same stops as the CSS card)
-                var gr = g.createLinearGradient(0, 0, 0, S);
-                gr.addColorStop(0, 'rgba(6,27,61,0)'); gr.addColorStop(.30, 'rgba(6,27,61,0)');
-                gr.addColorStop(.58, 'rgba(6,27,61,.88)'); gr.addColorStop(1, 'rgba(6,27,61,.97)');
-                g.fillStyle = gr; g.fillRect(0, 0, S, S);
-
-                function rrect(x, y, w, h, rad) {
-                    g.beginPath(); g.moveTo(x + rad, y); g.arcTo(x + w, y, x + w, y + h, rad); g.arcTo(x + w, y + h, x, y + h, rad);
-                    g.arcTo(x, y + h, x, y, rad); g.arcTo(x, y, x + w, y, rad); g.closePath();
-                }
-                // logo badge
-                var lh = 72, lw = logo.width && logo.height ? Math.round(lh * logo.width / logo.height) : 200;
-                g.fillStyle = 'rgba(255,255,255,.94)'; rrect(48, 40, lw + 42, lh + 22, 24); g.fill();
-                if (logo.width) g.drawImage(logo, 69, 51, lw, lh);
-                // date tag
-                g.fillStyle = '#f37021'; g.fillRect(S - 160, 0, 160, 40);
-                g.fillStyle = '#fff'; g.font = '700 21px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
-                g.fillText(formatDate(w.createdAt || new Date().toISOString()), S - 80, 22);
-
-                // author block
-                var scale = S / 1000;
-                g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-                g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 8;
-                var meta1 = i18n.t('role.' + w.role) + ' \u00b7 ' + i18n.t('campus.' + w.campus), meta2 = countryName(w.country);
-                var footTop = Math.round(759 * scale), tx = Math.round(270 * scale);
-                g.fillStyle = '#fff'; g.font = '800 ' + Math.round(54 * scale) + 'px ' + FONT; g.fillText(fit(g, w.name, 520), tx, footTop + Math.round(42 * scale));
-                g.fillStyle = 'rgba(255,255,255,.85)'; g.font = '500 ' + Math.round(40 * scale) + 'px ' + FONT;
-                g.fillText(fit(g, meta1, 520), tx, footTop + Math.round(42 * scale + 43 * scale));
-                g.fillText(fit(g, '\u25CF ' + meta2, 520), tx, footTop + Math.round(42 * scale + 43 * scale + 42 * scale));
-                g.shadowBlur = 0;
-                var avR = Math.round(60 * scale);
-                g.fillStyle = '#f37021'; g.beginPath(); g.arc(Math.round(155 * scale), footTop + Math.round(69 * scale), avR, 0, Math.PI * 2); g.fill();
-                g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.7)'; g.stroke();
-                g.fillStyle = '#fff'; g.font = '800 ' + Math.round(48 * scale) + 'px ' + FONT; g.textAlign = 'center';
-                g.fillText(initials(w.name), Math.round(155 * scale), footTop + Math.round(69 * scale + 17 * scale)); g.textAlign = 'left';
-                g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(Math.round(80 * scale), Math.round(729 * scale), Math.round(840 * scale), 2);
-
-                // message, built upwards from the divider
-                g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 10;
-                g.font = '600 ' + Math.round(56 * scale) + 'px ' + FONT; g.fillStyle = '#fff';
-                var lines = wrapText(g, w.message, Math.round(840 * scale), 4), lh2 = Math.round(77 * scale), top = Math.round(689 * scale) - lines.length * lh2;
-                lines.forEach(function (ln, i) { g.fillText(ln, Math.round(80 * scale), top + (i + 1) * lh2 - 16); });
-                g.shadowBlur = 0;
-                g.fillStyle = '#f37021'; g.font = '900 ' + Math.round(150 * scale) + 'px Georgia, serif'; g.fillText('\u201C', Math.round(70 * scale), top + 20);
-
-                var q = .70, data = c.toDataURL('image/jpeg', q);
-                while (data.length > 160 * 1024 && q > .45) { q -= .08; data = c.toDataURL('image/jpeg', q); }
-                return data;
+            }).catch(function (err) {
+                console.warn('[!] renderCardImage error:', err);
+                return null;
             });
         },
 

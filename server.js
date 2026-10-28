@@ -346,23 +346,24 @@ async function api(req, res, url) {
     const admin = isAdmin(req);
 
     // state-changing requests must come from this site (blocks cross-site form posts)
-    if (req.method !== 'GET' && req.headers.origin) {
+    if (req.method !== 'GET' && req.method !== 'OPTIONS' && req.headers.origin) {
         let originHost = '';
-        try { originHost = new URL(req.headers.origin).host; } catch (e) { }
+        try { originHost = new URL(req.headers.origin).hostname; } catch (e) { }
 
         let publicHost = '';
-        try { if (PUBLIC_URL) publicHost = new URL(PUBLIC_URL).host; } catch (e) { }
+        try { if (PUBLIC_URL) publicHost = new URL(PUBLIC_URL).hostname; } catch (e) { }
 
         const allowedHosts = [
-            req.headers['x-forwarded-host'],
-            req.headers.host,
+            (req.headers['x-forwarded-host'] || '').split(':')[0],
+            (req.headers.host || '').split(':')[0],
             publicHost
         ].filter(Boolean);
 
         const isCloudFront = originHost.endsWith('.cloudfront.net') ||
             (req.headers.via && req.headers.via.toLowerCase().includes('cloudfront'));
+        const isLocal = originHost === 'localhost' || originHost === '127.0.0.1';
 
-        const ok = allowedHosts.includes(originHost) || isCloudFront;
+        const ok = allowedHosts.includes(originHost) || isCloudFront || isLocal;
         if (!ok) {
             console.warn(`[!] Blocked origin: "${originHost}". Allowed hosts:`, allowedHosts);
             return json(res, 403, { error: 'bad_origin' });
@@ -497,7 +498,7 @@ function serveFile(res, file, cache) {
         if (err || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
         res.writeHead(200, {
             'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Content-Length': st.size,
-            'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff'
+            'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': '*'
         });
         fs.createReadStream(file).pipe(res);
     });
@@ -505,6 +506,19 @@ function serveFile(res, file, cache) {
 
 const server = http.createServer(async (req, res) => {
     try {
+        const origin = req.headers.origin;
+        if (origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            res.setHeader('Access-Control-Max-Age', '86400');
+        }
+        if (req.method === 'OPTIONS') {
+            res.writeHead(204);
+            return res.end();
+        }
+
         const url = new URL(req.url.replace(/^\/{2,}/, '/'), 'http://x');
         let p;
         try { p = decodeURIComponent(url.pathname); } catch (e) { res.writeHead(400, { 'Content-Type': 'text/plain' }); return res.end('Bad request'); }
