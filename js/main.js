@@ -255,6 +255,19 @@ GW.load().then(function (wishes) {
         var scene = new THREE.Scene();
         scene.background = new THREE.Color(0x040d22);
         scene.fog = new THREE.FogExp2(0x040d22, 0.018);
+
+        // Optional 360 equirectangular panoramic background
+        (function () {
+            var texLoader = new THREE.TextureLoader();
+            texLoader.load('images/tree_bg_360.jpg', function (tex) {
+                tex.mapping = THREE.EquirectangularReflectionMapping;
+                scene.background = tex;
+                scene.fog = null;
+            }, undefined, function () {
+                // Keep default dark color if no 360 panorama image is present
+            });
+        })();
+
         var camera = new THREE.PerspectiveCamera(50, box.clientWidth / box.clientHeight, 0.1, 500);
         camera.position.set(0, 15, 36);
 
