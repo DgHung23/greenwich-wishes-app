@@ -92,10 +92,10 @@
                         <div class="char-count text-end mt-1"><span id="f-count">0</span>/220</div>
                     </div>
                     <div class="mb-4">
-                        <label id="f-photo-label" class="form-label d-block" data-i18n="create.photo">Ảnh của bạn</label>
+                        <label id="f-photo-label" class="form-label d-block"><span data-i18n="create.photo">Ảnh của bạn</span> <small class="text-muted fw-normal">(không bắt buộc, để trống sẽ tự lấy ảnh ngẫu nhiên)</small></label>
                         <input id="f-file" type="file" accept="image/jpeg,image/png,image/webp" class="d-none">
                         <button type="button" id="btn-pick" class="btn btn-outline-gw w-100 py-3 dropzone">
-                            <i class="fas fa-cloud-arrow-up fa-lg me-2"></i><span data-i18n="create.choose">Chọn ảnh từ máy</span>
+                            <i class="fas fa-cloud-arrow-up fa-lg me-2"></i><span data-i18n="create.choose">Chọn ảnh từ máy (không bắt buộc)</span>
                         </button>
                         <div id="crop-area" class="crop-area d-none">
                             <div class="crop-stage"><img id="crop-img" alt=""></div>
@@ -106,6 +106,7 @@
                                     <button type="button" class="btn btn-outline-gw" id="crop-zoom-in" title="+"><i class="fas fa-magnifying-glass-plus"></i></button>
                                     <button type="button" class="btn btn-outline-gw" id="crop-rotate" title="↻"><i class="fas fa-rotate-right"></i></button>
                                     <button type="button" class="btn btn-outline-gw" id="crop-change" data-i18n="create.change">Đổi ảnh</button>
+                                    <button type="button" class="btn btn-outline-danger" id="crop-remove"><i class="fas fa-xmark me-1"></i>Bỏ ảnh</button>
                                 </div>
                             </div>
                         </div>

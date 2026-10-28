@@ -108,57 +108,15 @@ async function initDb(retries = 15, delay = 2000) {
             const cRes = await pool.query('SELECT COUNT(*)::int AS n FROM wishes');
             const count = cRes.rows[0].n;
 
-            // Auto-migrate from existing SQLite data if gw.db exists and PostgreSQL is empty
-            let migrated = false;
-            const sqlitePath = path.join(DATA_DIR, 'gw.db');
-            if (count === 0 && fs.existsSync(sqlitePath)) {
-                try {
-                    const { DatabaseSync } = require('node:sqlite');
-                    const sqldb = new DatabaseSync(sqlitePath);
-                    const wishes = sqldb.prepare('SELECT * FROM wishes').all();
-                    const likes = sqldb.prepare('SELECT * FROM likes').all();
-                    const seedHearts = sqldb.prepare('SELECT * FROM seed_hearts').all();
-                    if (wishes.length > 0) {
-                        console.log(`[i] Migrating ${wishes.length} wishes from SQLite (gw.db) to PostgreSQL...`);
-                        const client = await pool.connect();
-                        try {
-                            await client.query('BEGIN');
-                            for (const w of wishes) {
-                                await client.query(
-                                    `INSERT INTO wishes (id, device_id, name, role, campus, country, city, message, theme, image, card_image, created_at)
-                                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-                                     ON CONFLICT (id) DO NOTHING`,
-                                    [w.id, w.device_id, w.name, w.role, w.campus, w.country, w.city, w.message, w.theme, w.image, w.card_image, w.created_at]
-                                );
-                            }
-                            for (const l of likes) {
-                                await client.query(`INSERT INTO likes (wish_id, device_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [l.wish_id, l.device_id]);
-                            }
-                            for (const s of seedHearts) {
-                                await client.query(`INSERT INTO seed_hearts (wish_id, n) VALUES ($1, $2) ON CONFLICT (wish_id) DO UPDATE SET n = EXCLUDED.n`, [s.wish_id, s.n]);
-                            }
-                            await client.query('COMMIT');
-                            console.log(`[✓] Successfully migrated ${wishes.length} wishes to PostgreSQL!`);
-                            migrated = true;
-                        } catch (e) {
-                            await client.query('ROLLBACK');
-                            console.error('[!] Migration error:', e.message);
-                        } finally {
-                            client.release();
-                            try { sqldb.close(); } catch (_) { }
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[!] SQLite auto-migration skipped:', e.message);
-                }
-            }
-
-            // Seed demo data if SEED_DEMO=1 and PostgreSQL is still empty
-            if (!migrated && count === 0 && process.env.SEED_DEMO === '1') {
-                console.log('[i] Seeding demo wishes into PostgreSQL...');
+            // Seed demo data if count === 0 or FORCE_SEED_DEMO=1
+            if (count === 0 || process.env.FORCE_SEED_DEMO === '1') {
+                console.log(`[i] Seeding ${GW_DATA.wishes.length} demo wishes into PostgreSQL...`);
                 const client = await pool.connect();
                 try {
                     await client.query('BEGIN');
+                    if (process.env.FORCE_SEED_DEMO === '1') {
+                        await client.query('TRUNCATE TABLE likes, seed_hearts, wishes CASCADE');
+                    }
                     for (const w of GW_DATA.wishes) {
                         await client.query(
                             `INSERT INTO wishes (id, device_id, name, role, campus, country, city, message, theme, image, card_image, created_at)
@@ -429,13 +387,15 @@ async function api(req, res, url) {
         }
         const b = await readJson(req);
         const f = validatedFields(b, null);
-        const photo = jpegFrom(b.image, 'image_required');
+        const photo = b.image ? jpegFrom(b.image, 'image_invalid') : null;
         const card = b.cardImage ? jpegFrom(b.cardImage, 'card_invalid') : null;
         const id = 'u' + crypto.randomBytes(6).toString('hex');
-        const image = saveJpeg(photo, id, 'photo');
+        const image = photo ? saveJpeg(photo, id, 'photo') : null;
         const cardImage = card ? saveJpeg(card, id, 'card') : null;
+        const validThemes = (GW_DATA && GW_DATA.themes) || ['p01', 'p02', 'p03', 'p04', 'p05', 'p06', 'p07', 'p08', 'p09', 'p10', 'p11', 'p12', 'p13'];
+        const theme = image ? null : (validThemes.includes(b.theme) ? b.theme : validThemes[Math.floor(Math.random() * validThemes.length)]);
         try {
-            await q.insert(id, admin ? null : device, f.name, f.role, f.campus, f.country, f.city, f.message, null, image, cardImage, new Date().toISOString());
+            await q.insert(id, admin ? null : device, f.name, f.role, f.campus, f.country, f.city, f.message, theme, image, cardImage, new Date().toISOString());
         } catch (e) {
             unlinkUpload(image); unlinkUpload(cardImage);
             if (/UNIQUE|duplicate key/i.test(e.message)) return json(res, 409, { error: 'already_posted' });

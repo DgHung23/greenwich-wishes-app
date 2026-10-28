@@ -81,6 +81,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     $('btn-pick').addEventListener('click', function () { $('f-file').click(); });
     $('crop-change').addEventListener('click', function () { $('f-file').value = ''; $('f-file').click(); });
+    var btnRemove = $('crop-remove');
+    if (btnRemove) btnRemove.addEventListener('click', function () { destroyCropper(); renderPreview(); });
     $('f-file').addEventListener('change', function () { openFile(this.files[0]); });
     $('crop-zoom-in').addEventListener('click', function () { cropper && cropper.zoom(.1); });
     $('crop-zoom-out').addEventListener('click', function () { cropper && cropper.zoom(-.1); });
@@ -109,15 +111,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- submit ---------- */
     function photoCanvas() {
-        return cropper.getCroppedCanvas({ width: 1000, height: 1000, fillColor: '#ffffff', imageSmoothingQuality: 'high' });
+        // resize to 640x640: sharp on all screens, but 3x faster and avoids mobile OOM
+        return cropper.getCroppedCanvas({ width: 640, height: 640, fillColor: '#ffffff', imageSmoothingQuality: 'medium' });
     }
     function canvasJpeg(canvas) {
-        var q = .88, data = canvas.toDataURL('image/jpeg', q);
-        while (data.length > 1.3 * 1024 * 1024 && q > .5) { q -= .1; data = canvas.toDataURL('image/jpeg', q); }
+        // compress with 0.78 quality: cuts payload from 1.5MB to ~80-120KB
+        var q = .78, data = canvas.toDataURL('image/jpeg', q);
+        while (data.length > 400 * 1024 && q > .45) { q -= .1; data = canvas.toDataURL('image/jpeg', q); }
         return data;
     }
     function fail(err) {
         GW.spinner(false);
+        if (err.name === 'AbortError' || (err.message && err.message.indexOf('timeout') !== -1)) {
+            return showMsg('create.tooBig');
+        }
         if (err.status === 409) return GW.load().then(function () { showPosted(err.body && err.body.wishId); });
         if (err.status === 403) return showMsg('admin.expired');
         showMsg(err.status === 429 ? 'create.errRate' : (err.status === 413 || err.message === 'storage_full') ? 'create.tooBig' : 'create.errGeneric');
@@ -128,15 +135,26 @@ document.addEventListener('DOMContentLoaded', function () {
         clearMsg();
         var w = fields();
         if (!w.name || !w.message) return showMsg('create.required');
-        if (!cropper && !editing) return showMsg('create.needPhoto');
         GW.spinner(true, i18n.t('create.sending'));
 
-        var cardWish = { name: w.name, role: w.role, campus: w.campus, country: w.country, message: w.message,
-            createdAt: editing ? editing.createdAt : new Date().toISOString() };
+        // If no photo was picked, pick a random theme photo
+        var randomTheme = GW_DATA.themes[Math.floor(Math.random() * GW_DATA.themes.length)];
+        var cardWish = {
+            name: w.name, role: w.role, campus: w.campus, country: w.country, message: w.message,
+            createdAt: editing ? editing.createdAt : new Date().toISOString()
+        };
         var photo = cropper ? photoCanvas() : null;
-        GW.renderCardImage(cardWish, photo || editing.image).then(function (cardImage) {
+        var photoSrcForCard = photo || (editing && editing.image) || ('images/photos/' + randomTheme + '.jpg');
+
+        GW.renderCardImage(cardWish, photoSrcForCard).then(function (cardImage) {
             w.cardImage = cardImage;
-            if (photo) w.image = canvasJpeg(photo);
+            if (photo) {
+                w.image = canvasJpeg(photo);
+                w.theme = null;
+            } else if (!editing) {
+                w.image = null;
+                w.theme = randomTheme;
+            }
 
             if (editing) {
                 return GW.updateWish(editing.id, w).then(function () { location.href = 'index.html'; });
