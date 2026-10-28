@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 260" preserveAspectRatio="xMidYMax meet">
+  <!-- Stylised skyline: Greenwich (UK) landmarks blending into Vietnamese cities -->
+  <g fill="#0a2a5e" opacity=".14">
+    <rect x="40" y="150" width="80" height="110"/><rect x="130" y="120" width="60" height="140"/>
+    <rect x="1700" y="130" width="70" height="130"/><rect x="1780" y="160" width="90" height="100"/>
+    <rect x="760" y="140" width="70" height="120"/><rect x="1090" y="130" width="60" height="130"/>
+  </g>
+  <g fill="#0a2a5e" opacity=".9">
+    <!-- Old Royal Naval College twin domes -->
+    <rect x="220" y="170" width="300" height="90"/>
+    <rect x="250" y="120" width="40" height="50"/><path d="M245 120 q25 -40 50 0z"/><rect x="267" y="62" width="6" height="22"/>
+    <rect x="450" y="120" width="40" height="50"/><path d="M445 120 q25 -40 50 0z"/><rect x="467" y="62" width="6" height="22"/>
+    <g fill="#e8eef8"><rect x="240" y="190" width="14" height="40"/><rect x="270" y="190" width="14" height="40"/><rect x="300" y="190" width="14" height="40"/><rect x="330" y="190" width="14" height="40"/><rect x="396" y="190" width="14" height="40"/><rect x="426" y="190" width="14" height="40"/><rect x="456" y="190" width="14" height="40"/><rect x="486" y="190" width="14" height="40"/></g>
+    <!-- Cutty-sark-like masts -->
+    <path d="M560 225 h170 l-20 30 h-130z"/><rect x="600" y="120" width="4" height="105"/><rect x="645" y="105" width="4" height="120"/><rect x="690" y="125" width="4" height="100"/>
+    <path d="M604 130 l30 12 v60 l-30 -6z" opacity=".5"/><path d="M649 115 l30 12 v70 l-30 -6z" opacity=".5"/>
+    <!-- Greenwich observatory -->
+    <rect x="850" y="180" width="120" height="80"/><path d="M870 180 a40 40 0 0 1 80 0z"/><rect x="905" y="128" width="10" height="16" fill="#f37021"/>
+    <!-- Campus tower (FPT style) -->
+    <rect x="1000" y="90" width="70" height="170"/><g fill="#e8eef8"><rect x="1012" y="105" width="46" height="6"/><rect x="1012" y="125" width="46" height="6"/><rect x="1012" y="145" width="46" height="6"/><rect x="1012" y="165" width="46" height="6"/><rect x="1012" y="185" width="46" height="6"/><rect x="1012" y="205" width="46" height="6"/></g>
+    <rect x="1000" y="82" width="70" height="8" fill="#f37021"/>
+    <!-- Hanoi One Pillar Pagoda -->
+    <rect x="1215" y="205" width="10" height="55"/><rect x="1180" y="185" width="80" height="22"/><path d="M1168 188 q52 -45 104 0z"/>
+    <!-- Saigon Bitexco-style tower -->
+    <path d="M1320 260 L1335 60 Q1350 40 1365 60 L1380 260z"/><rect x="1355" y="140" width="34" height="8" rx="4" fill="#f37021"/>
+    <!-- Dragon bridge (Da Nang) -->
+    <path d="M1420 230 q40 -50 80 0 q40 -50 80 0 q40 -50 80 0" fill="none" stroke="#0a2a5e" stroke-width="10" stroke-linecap="round"/>
+    <rect x="1410" y="232" width="270" height="8"/>
+    <circle cx="1660" cy="200" r="10" fill="#f37021"/>
+  </g>
+  <rect x="0" y="250" width="1920" height="10" fill="#f37021"/>
+  <rect x="0" y="244" width="1920" height="6" fill="#0a2a5e"/>
+</svg>

@@ -1,0 +1,16 @@
+{
+  "name": "greenwich-wishes",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Greenwich Wishes - wish wall for University of Greenwich (Vietnam)",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "demo": "SEED_DEMO=1 node --no-warnings server.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

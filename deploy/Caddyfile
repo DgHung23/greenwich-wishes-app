@@ -1,0 +1,10 @@
+# Caddy = the easiest option: it gets and renews the HTTPS certificate by itself.
+# Replace the domain, save as /etc/caddy/Caddyfile, then:  sudo systemctl reload caddy
+wishes.example.edu.vn {
+	encode gzip
+	# allow photo uploads (cropped photo + share card are sent together, ~4 MB max)
+	request_body {
+		max_size 8MB
+	}
+	reverse_proxy 127.0.0.1:8780
+}

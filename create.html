@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenwich Việt Nam - Gửi lời chúc</title>
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="create">
+    <section id="spinner_layout" class="spinner-layout hidden">
+        <div class="spinner-box">
+            <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--gw-orange)"></i>
+            <h2 id="progress_status">Processing...</h2>
+        </div>
+    </section>
+
+    <header class="custom-header py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="brand-logo" href="index.html"><img src="images/logo.png" alt="University of Greenwich Vietnam"></a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="index.html" class="btn btn-outline-gw px-3"><i class="fas fa-arrow-left me-1"></i><span class="d-none d-sm-inline" data-i18n="create.back">Quay lại</span></a>
+                <div class="lang-switcher">
+                    <button class="lang-btn" data-lang="vi" onclick="i18n.switch('vi')">VI</button>
+                    <span class="lang-sep">|</span>
+                    <button class="lang-btn" data-lang="en" onclick="i18n.switch('en')">EN</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container create-wrap py-5">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div id="posted-panel" class="create-panel text-center d-none">
+                    <i class="fas fa-circle-check fa-3x mb-3" style="color:var(--gw-orange)"></i>
+                    <h1 data-i18n="create.alreadyTitle">Bạn đã gửi lời chúc rồi</h1>
+                    <p class="text-muted" data-i18n="create.alreadyText"></p>
+                    <div class="d-flex gap-2 justify-content-center flex-wrap mt-4">
+                        <button type="button" id="btn-share-mine" class="btn btn-fb"><i class="fab fa-facebook-f me-2"></i><span data-i18n="share.facebook">Chia sẻ lên Facebook</span></button>
+                        <a href="index.html" class="btn btn-outline-gw px-4" data-i18n="create.viewWall">Xem bức tường lời chúc</a>
+                    </div>
+                </div>
+                <form id="wish-form" class="create-panel" novalidate>
+                    <div id="admin-note" class="alert alert-info py-2 d-none"><i class="fas fa-user-shield me-1"></i><span data-i18n="admin.note"></span></div>
+                    <h1 data-i18n="create.title">Gửi lời chúc đến Greenwich Việt Nam</h1>
+                    <p class="text-muted mb-4" data-i18n="create.intro"></p>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="f-name" data-i18n="create.name">Họ và tên</label>
+                        <input id="f-name" class="form-control" maxlength="40" required data-i18n-placeholder="create.namePh">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label" for="f-role" data-i18n="create.role">Bạn là</label>
+                            <select id="f-role" class="form-select">
+                                <option value="student" data-i18n="role.student"></option>
+                                <option value="alumni" data-i18n="role.alumni"></option>
+                                <option value="staff" data-i18n="role.staff"></option>
+                                <option value="parent" data-i18n="role.parent"></option>
+                                <option value="partner" data-i18n="role.partner"></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label" for="f-campus" data-i18n="create.campus">Cơ sở</label>
+                            <select id="f-campus" class="form-select">
+                                <option value="hn" data-i18n="campus.hn"></option>
+                                <option value="dn" data-i18n="campus.dn"></option>
+                                <option value="hcm" data-i18n="campus.hcm"></option>
+                                <option value="ct" data-i18n="campus.ct"></option>
+                                <option value="uk" data-i18n="campus.uk"></option>
+                                <option value="global" data-i18n="campus.global"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="f-country" data-i18n="create.country">Quốc gia</label>
+                        <select id="f-country" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="f-message" data-i18n="create.message">Lời chúc</label>
+                        <textarea id="f-message" class="form-control" rows="5" maxlength="220" required data-i18n-placeholder="create.messagePh"></textarea>
+                        <div class="char-count text-end mt-1"><span id="f-count">0</span>/220</div>
+                    </div>
+                    <div class="mb-4">
+                        <label id="f-photo-label" class="form-label d-block" data-i18n="create.photo">Ảnh của bạn</label>
+                        <input id="f-file" type="file" accept="image/jpeg,image/png,image/webp" class="d-none">
+                        <button type="button" id="btn-pick" class="btn btn-outline-gw w-100 py-3 dropzone">
+                            <i class="fas fa-cloud-arrow-up fa-lg me-2"></i><span data-i18n="create.choose">Chọn ảnh từ máy</span>
+                        </button>
+                        <div id="crop-area" class="crop-area d-none">
+                            <div class="crop-stage"><img id="crop-img" alt=""></div>
+                            <div class="crop-tools">
+                                <span class="text-muted small" data-i18n="create.cropHint">Kéo để di chuyển, cuộn chuột hoặc chụm hai ngón để phóng to. Khung vuông là phần sẽ hiện trong bài đăng.</span>
+                                <div class="btn-group btn-group-sm ms-auto" role="group">
+                                    <button type="button" class="btn btn-outline-gw" id="crop-zoom-out" title="-"><i class="fas fa-magnifying-glass-minus"></i></button>
+                                    <button type="button" class="btn btn-outline-gw" id="crop-zoom-in" title="+"><i class="fas fa-magnifying-glass-plus"></i></button>
+                                    <button type="button" class="btn btn-outline-gw" id="crop-rotate" title="↻"><i class="fas fa-rotate-right"></i></button>
+                                    <button type="button" class="btn btn-outline-gw" id="crop-change" data-i18n="create.change">Đổi ảnh</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="f-error" class="alert alert-warning py-2 d-none" data-i18n="create.required"></div>
+                    <button type="submit" class="btn btn-login btn-lg w-100"><i class="fas fa-paper-plane me-2"></i><span data-i18n="create.submit">Gửi lời chúc</span></button>
+                </form>
+            </div>
+            <div class="col-lg-5">
+                <div class="position-sticky" style="top:110px">
+                    <p class="tab-desc-title mb-3" data-i18n="create.preview">Xem trước</p>
+                    <div class="preview-card" id="preview"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-main">
+            <div class="footer-bottom">
+                <p class="footer-copyright" data-i18n="footer.copyright">© 2026 Đại học Greenwich (Việt Nam)</p>
+                <div class="footer-divider"></div>
+            </div>
+        </div>
+        <div class="footer-illustration" style="margin-top:0">
+            <img src="images/footer-campus.svg" alt="Greenwich campus illustration">
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/create.js"></script>
+</body>
+
+</html>

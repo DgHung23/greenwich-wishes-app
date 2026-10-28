@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenwich Việt Nam - Gửi trọn lời chúc - Kết nối năm châu</title>
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="Greenwich Wishes – bức tường lời chúc, bản đồ kết nối và cây ước nguyện của cộng đồng Đại học Greenwich (Việt Nam).">
+    <meta property="og:title" content="Greenwich Wishes – University of Greenwich (Vietnam)">
+    <meta property="og:site_name" content="Đại học Greenwich (Việt Nam)">
+    <meta property="og:type" content="website">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/i18n.js"></script>
+</head>
+
+<body data-page="index">
+    <section id="spinner_layout" class="spinner-layout hidden">
+        <div class="spinner-box">
+            <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--gw-orange)"></i>
+            <h2 id="progress_status">Processing...</h2>
+        </div>
+    </section>
+
+    <!-- ================= Header ================= -->
+    <header class="custom-header py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="brand-logo" href="index.html"><img src="images/logo.png" alt="University of Greenwich Vietnam"></a>
+
+            <nav class="d-none d-lg-flex align-items-center gap-5">
+                <a href="https://greenwich.edu.vn/" target="_blank" class="header-link" data-i18n="nav.about">Greenwich Việt Nam</a>
+                <a href="https://www.gre.ac.uk/" target="_blank" class="header-link" data-i18n="nav.uk">University of Greenwich (UK)</a>
+                <a href="https://fe.edu.vn/" target="_blank" class="header-link" data-i18n="nav.fpt">FPT Education</a>
+            </nav>
+
+            <div class="d-flex align-items-center gap-2">
+                <a id="btn-send-wish" href="create.html" class="btn btn-login"><img src="images/icon-write-wish.svg" class="icon-write-wish me-0 me-sm-1" style="vertical-align:-0.2em" aria-hidden="true"><span class="d-none d-sm-inline" data-i18n="nav.sendWish">Gửi lời chúc</span></a>
+
+                <div class="lang-switcher">
+                    <button class="lang-btn" data-lang="vi" onclick="i18n.switch('vi')">VI</button>
+                    <span class="lang-sep">|</span>
+                    <button class="lang-btn" data-lang="en" onclick="i18n.switch('en')">EN</button>
+                </div>
+
+                <div class="dropdown d-lg-none">
+                    <button class="btn btn-outline-secondary dropdown-toggle px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border:none;font-size:1.2rem;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;">
+                        <li><a class="dropdown-item py-2 fw-bold text-dark" href="https://greenwich.edu.vn/" target="_blank" data-i18n="nav.about">Greenwich Việt Nam</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-dark" href="https://www.gre.ac.uk/" target="_blank" data-i18n="nav.uk">University of Greenwich (UK)</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold text-dark" href="https://fe.edu.vn/" target="_blank" data-i18n="nav.fpt">FPT Education</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= Banner ================= -->
+    <section id="header-banner">
+        <div class="main-banner">
+            <div class="banner-inner">
+                <div class="banner-kicker" data-i18n="banner.kicker">University of Greenwich · Việt Nam</div>
+                <h1 class="banner-title" data-i18n="banner.title">GREENWICH<br><span>WISHES</span></h1>
+                <p class="banner-sub" data-i18n="banner.sub"></p>
+                <div class="banner-chip"><i class="fas fa-earth-asia"></i><span data-i18n="banner.chip"></span></div>
+            </div>
+        </div>
+    </section>
+
+    <main class="container py-5">
+        <!-- ================= Counter ================= -->
+        <div class="text-center wish-counter-wrapper">
+            <div class="wish-counter-circle">
+                <span id="total-wishes-count">0</span>
+            </div>
+            <p class="wish-counter-label" data-i18n="index.tagline">Lời chúc kết nối cộng đồng Greenwich toàn cầu</p>
+
+            <div class="reach-stats">
+                <button type="button" class="reach-stat" data-reach="continents">
+                    <i class="fas fa-globe-asia reach-stat-icon"></i>
+                    <span class="reach-stat-value" id="total-continents-count">0</span>
+                    <span class="reach-stat-label" data-i18n="index.stat.continents">châu lục</span>
+                    <span class="reach-stat-more"><i class="fas fa-list-ul"></i></span>
+                </button>
+                <button type="button" class="reach-stat" data-reach="countries">
+                    <i class="fas fa-flag reach-stat-icon"></i>
+                    <span class="reach-stat-value" id="total-countries-count">0</span>
+                    <span class="reach-stat-label" data-i18n="index.stat.countries">quốc gia</span>
+                    <span class="reach-stat-more"><i class="fas fa-list-ul"></i></span>
+                </button>
+                <button type="button" class="reach-stat" data-reach="campuses">
+                    <i class="fas fa-building-columns reach-stat-icon"></i>
+                    <span class="reach-stat-value" id="total-campuses-count">0</span>
+                    <span class="reach-stat-label" data-i18n="index.stat.campuses">cơ sở</span>
+                    <span class="reach-stat-more"><i class="fas fa-list-ul"></i></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= Tabs ================= -->
+        <ul class="nav nav-pills justify-content-center flex-wrap gap-2 mb-5" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="wishes-tab" data-bs-toggle="tab" data-bs-target="#wishes" type="button" role="tab" aria-controls="wishes" aria-selected="true">
+                    <i class="fas fa-images me-2"></i><span data-i18n="index.tab.wishes">Danh sách lời chúc</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#map" type="button" role="tab" aria-controls="map" aria-selected="false">
+                    <i class="fas fa-project-diagram me-2"></i><span data-i18n="index.tab.map">Bản đồ kết nối</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tree-tab" data-bs-toggle="tab" data-bs-target="#tree-3d" type="button" role="tab" aria-controls="tree-3d" aria-selected="false">
+                    <i class="fas fa-tree me-2"></i><span data-i18n="index.tab.tree">Cây ước nguyện</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Wish wall -->
+            <div class="tab-pane fade show active" id="wishes" role="tabpanel" aria-labelledby="wishes-tab">
+                <p class="tab-desc-title" data-i18n="index.slogan">Mỗi lời chúc, một nhịp cầu Việt – Anh.</p>
+                <div class="wish-filter row g-2">
+                    <div class="col-12 col-sm-8">
+                        <div class="input-group">
+                            <input id="wish-search" type="search" class="form-control" data-i18n-placeholder="index.search">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-4">
+                        <select id="wish-campus" class="form-select">
+                            <option value="" data-i18n="index.allCampuses">Tất cả cơ sở</option>
+                            <option value="hn" data-i18n="campus.hn">Hà Nội</option>
+                            <option value="dn" data-i18n="campus.dn">Đà Nẵng</option>
+                            <option value="hcm" data-i18n="campus.hcm">TP. Hồ Chí Minh</option>
+                            <option value="ct" data-i18n="campus.ct">Cần Thơ</option>
+                            <option value="uk" data-i18n="campus.uk">Greenwich (London)</option>
+                            <option value="global" data-i18n="campus.global">Cộng đồng toàn cầu</option>
+                        </select>
+                    </div>
+                </div>
+                <ul id="lst_congratulations" class="list-congratulations row custom-scrollbar"></ul>
+                <div class="text-center mt-3" id="wish-load-more-wrap">
+                    <button id="btn-wish-load-more" class="btn btn-outline-gw px-4"><i class="fas fa-plus me-1"></i><span data-i18n="index.loadMore">Xem thêm lời chúc</span></button>
+                </div>
+            </div>
+
+            <!-- Connection map -->
+            <div class="tab-pane fade" id="map" role="tabpanel" aria-labelledby="map-tab">
+                <p class="tab-desc-title" data-i18n="index.mapDesc"></p>
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <div id="map-wrapper" class="canvas-container">
+                            <button id="btn-fullscreen-map" class="fullscreen-btn" data-i18n-title="common.fullscreen"><i class="fas fa-expand"></i></button>
+                            <div id="globe-container" style="width:100%;height:100%;"></div>
+                            <div class="globe-legend"><i class="fas fa-circle me-1" style="color:var(--gw-orange)"></i><span data-i18n="index.mapLegend"></span></div>
+                        </div>
+                        <p class="text-center mt-3 text-muted fst-italic">
+                            <i class="fas fa-info-circle me-1"></i><span data-i18n="index.mapHint"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wishing tree -->
+            <div class="tab-pane fade" id="tree-3d" role="tabpanel" aria-labelledby="tree-tab">
+                <div class="tab-desc-box tab-desc-collapsible">
+                    <i class="fas fa-quote-left tab-desc-icon"></i>
+                    <div class="tab-desc-body">
+                        <div class="tab-desc-content" data-i18n="index.treeDesc"></div>
+                        <button class="tab-desc-toggle" onclick="toggleTabDesc(this)"><span data-i18n="index.viewMore">Xem thêm</span> <i class="fas fa-chevron-down"></i></button>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <div id="tree-container" class="canvas-container">
+                            <button id="btn-fullscreen-tree" class="fullscreen-btn" data-i18n-title="common.fullscreen"><i class="fas fa-expand"></i></button>
+                            <div id="tree-wish-display" class="hint" data-i18n="index.treeHint.short"></div>
+                        </div>
+                        <p class="text-center mt-3 text-muted fst-italic">
+                            <i class="fas fa-info-circle me-1"></i><span data-i18n="index.treeHint.long"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= Modals ================= -->
+    <div class="modal fade" id="clusterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-fullscreen-sm-down modal-dialog-scrollable">
+            <div class="modal-content cluster-modal-content">
+                <div class="modal-header cluster-modal-header">
+                    <h5 class="modal-title"><i class="fas fa-map-marker-alt me-2" style="color:var(--gw-orange)"></i><span id="clusterModalTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="lst_cluster_wishes" class="row list-unstyled m-0 p-2"></ul>
+                    <div class="text-center mt-3" id="cluster-load-more-wrap" style="display:none">
+                        <button id="btn-cluster-load-more" class="btn btn-outline-gw btn-sm px-4"><i class="fas fa-plus me-1"></i><span data-i18n="index.clusterLoadMore">Xem thêm</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reachModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+            <div class="modal-content cluster-modal-content">
+                <div class="modal-header cluster-modal-header">
+                    <h5 class="modal-title"><i class="fas fa-chart-simple me-2" style="color:var(--gw-orange)"></i><span id="reachModalTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table reach-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="reach-col-rank">#</th>
+                                <th id="reachModalNameHead"></th>
+                                <th class="text-end" data-i18n="index.reach.wishes">Lời chúc</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reach-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="wishDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content cluster-modal-content bg-transparent shadow-none">
+                <div class="text-end mb-2"><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div id="wishDetailBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= Footer ================= -->
+    <footer>
+        <div class="footer-main">
+            <div class="footer-top">
+                <div class="footer-logo">
+                    <img src="images/logo.png" alt="University of Greenwich Vietnam">
+                </div>
+
+                <div class="footer-info">
+                    <h3 class="footer-title" data-i18n="footer.title">Đại học Greenwich (Việt Nam)</h3>
+                    <div class="footer-contact">
+                        <span data-i18n="footer.alliance"></span>
+                    </div>
+                    <div class="footer-campuses">
+                        <div><b data-i18n="footer.campus.hn">Hà Nội:</b> 2 Phạm Văn Bạch, Cầu Giấy</div>
+                        <div><b data-i18n="footer.campus.dn">Đà Nẵng:</b> 658 Ngô Quyền, Sơn Trà</div>
+                        <div><b data-i18n="footer.campus.hcm">TP.HCM:</b> 20 Cộng Hòa, Tân Bình</div>
+                        <div><b data-i18n="footer.campus.ct">Cần Thơ:</b> 160 Đường 30/4, Ninh Kiều</div>
+                    </div>
+                    <div class="footer-links">
+                        <a href="https://greenwich.edu.vn/">Greenwich Vietnam</a>
+                        <span>○</span>
+                        <a href="https://www.gre.ac.uk/">University of Greenwich (UK)</a>
+                        <span>○</span>
+                        <a href="https://greenwich.edu.vn/" data-i18n="footer.admission">Tuyển sinh</a>
+                        <span>○</span>
+                        <a href="https://fe.edu.vn/">FPT Education</a>
+                        <span>○</span>
+                        <a href="https://fpt.edu.vn/">FPT University</a>
+                    </div>
+                </div>
+
+                <div class="footer-social">
+                    <a href="https://www.facebook.com/greenwichvietnam" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.youtube.com/" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://www.linkedin.com/" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p class="footer-copyright" data-i18n="footer.copyright">© 2026 Đại học Greenwich (Việt Nam)</p>
+                <div class="footer-divider"></div>
+            </div>
+        </div>
+
+        <div class="footer-illustration">
+            <img src="images/footer-campus.svg" alt="Greenwich campus illustration">
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

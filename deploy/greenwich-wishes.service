@@ -1,0 +1,24 @@
+# systemd unit: keeps the app running and restarts it after a crash or reboot.
+# Install:
+#   sudo cp deploy/greenwich-wishes.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now greenwich-wishes
+#   sudo journalctl -u greenwich-wishes -f        (live logs)
+# Adjust WorkingDirectory / ExecStart (path to node: `which node`) to your server.
+[Unit]
+Description=Greenwich Wishes
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/greenwich-wishes
+ExecStart=/usr/bin/node --no-warnings server.js
+Restart=always
+RestartSec=3
+# configuration comes from /opt/greenwich-wishes/.env
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/greenwich-wishes/data
+
+[Install]
+WantedBy=multi-user.target
