@@ -528,7 +528,12 @@ const server = http.createServer(async (req, res) => {
         if (p === '/') p = '/index.html';
         const up = p.match(/^\/uploads\/([\w-]+\.jpg)$/);
         if (up) return serveFile(res, path.join(UPLOADS, up[1]), 'public, max-age=31536000, immutable');
-        if (PUBLIC_FILES.test(p) && !p.includes('..')) return serveFile(res, path.join(ROOT, p), 'no-cache');
+        if (PUBLIC_FILES.test(p) && !p.includes('..')) {
+            // Cache static assets (css, js, images, fonts) for 24 hours to drastically reduce CloudFront requests
+            const isAsset = /^\/(css|js|images)\//.test(p) || /\.(css|js|png|jpg|jpeg|svg|webp|ico|woff2?|ttf)$/i.test(p);
+            const cacheHeader = isAsset ? 'public, max-age=86400' : 'no-cache';
+            return serveFile(res, path.join(ROOT, p), cacheHeader);
+        }
         res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found');
     } catch (e) {
         if (!res.headersSent) json(res, e.status || 500, e.body || { error: 'server_error' });
